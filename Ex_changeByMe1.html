@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>個人開銷記錄</title>
+    <meta name="viewport"
+        content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+    <style>
+        /* 驗收核心樣式：當 done 為 true 時，文字加上刪除線、變灰色 */
+        .done-text {
+            text-decoration: line-through;
+            color: #a0a0a0;
+            font-style: italic;
+        }
+
+        .status-badge {
+            /* Show that the unfinished status can be clicked. */
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <ion-app>
+        <ion-header>
+            <ion-toolbar>
+                <ion-title>L9 - Ex3</ion-title>
+            </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+            <h3 class="ion-padding-horizontal">我的待辦清單：</h3>
+
+            <!-- 4. 渲染成 ion-list 的容器 -->
+            <ion-list id="todoListContainer"></ion-list>
+
+            <!-- 5. 專用驗收按鈕 -->
+            <ion-button id="actionBtn" expand="block" color="warning" class="ion-margin-top">
+                呼叫下一個物件的 markDone()
+            </ion-button>
+        </ion-content>
+    </ion-app>
+    <script>
+        // 1. 建立一個 TodoItemClass
+        class TodoItemClass {
+            constructor(title) {
+                this.title = title;       // 接收事項名稱
+                this.done = false;        // 自動設定屬性 done 為 false
+            }
+
+            // 2. 加入一個方法 markDone()，把 done 改成 true
+            markDone() {
+                this.done = true;
+            }
+
+            // 3. 加入一個方法 createHTML(index)，回傳這筆待辦事項的 HTML 字串
+            createHTML(index) {
+                // 未完成時不加刪除線，完成後才套用 done-text 樣式。
+                const textClass = this.done ? 'class="done-text"' : '';
+                const statusClass = this.done ? 'done-text' : '';
+
+                return `
+                            <ion-item>
+                <ion-label ${textClass}>
+                  ${index + 1}. ${this.title}
+                </ion-label>
+                                <!-- Clicking this status completes this specific item. -->
+                                <ion-badge slot="end" class="status-badge ${statusClass}" data-index="${index}"
+                                    title="點擊完成此項目" role="button" tabindex="0"
+                                    color="${this.done ? 'success' : 'medium'}">
+                  ${this.done ? '已完成 (true)' : '未完成 (false)'}
+                </ion-badge>
+              </ion-item>
+            `;
+            }
+        }
+
+        // 4. 建立一個陣列，裡面放 3 個 TodoItem 的實例
+        let todoItems = [
+            new TodoItemClass("買一杯冰美式咖啡"),
+            new TodoItemClass("複習 JavaScript 類別 (Class)"),
+            new TodoItemClass("整理房間的書桌")
+        ];
+
+        const listContainer = document.getElementById('todoListContainer');
+        const actionBtn = document.getElementById('actionBtn');
+
+        // 渲染畫面的主函數
+        function render() {
+            // 嚴格使用 map() 呼叫每個實例的 createHTML(index) 方法
+            const htmlArray = todoItems.map((item, index) => item.createHTML(index));
+
+            // 將 map 產生的陣列組合後，渲染進 ion-list 中
+            listContainer.innerHTML = htmlArray.join('');
+        }
+
+        // Clicking an unfinished status also completes that specific item.
+        listContainer.addEventListener('click', (event) => {
+            const statusBadge = event.target.closest('.status-badge');
+            const itemIndex = Number(statusBadge?.dataset.index);
+
+            if (statusBadge && !todoItems[itemIndex].done) {
+            // Update the item first, then render the new strikethrough state.
+                todoItems[itemIndex].markDone();
+                render();
+                actionBtn.disabled = todoItems.every((item) => item.done);
+            }
+        });
+
+        // 5. 每按一次按鈕，就呼叫下一個未完成物件的 markDone()
+        actionBtn.addEventListener('click', () => {
+            const nextItem = todoItems.find((item) => !item.done);
+
+            if (nextItem) {
+                nextItem.markDone();
+                render();
+            }
+
+            actionBtn.disabled = todoItems.every((item) => item.done);
+        });
+
+        // 網頁載入時第一次渲染
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+            actionBtn.disabled = todoItems.every((item) => item.done);
+        });
+    </script>
+</body>
+
+</html>
