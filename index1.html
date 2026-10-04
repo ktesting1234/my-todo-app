@@ -128,6 +128,11 @@
             render();
             actionBtn.disabled = todoItems.every((item) => item.done);
         });
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('sw.js');
+        }
+        
     </script>
 </body>
 
