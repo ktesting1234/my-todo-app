@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="zh-HK"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#FF6B4A"/><title>PWA Test</title>
+<link rel="manifest" href="manifest.webmanifest"/><link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<style>
+*{margin:0;box-sizing:border-box}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#FFF7F0;font-family:-apple-system,"PingFang HK",sans-serif;color:#211D1A;padding:24px}
+h1{font-size:22px;margin-bottom:8px}
+p{color:#857E74;font-size:14px;margin-bottom:28px;text-align:center}
+button{font-size:17px;font-weight:800;padding:16px 32px;border-radius:16px;cursor:pointer;
+  background:#FF6B4A;color:#fff;border:2.5px solid #211D1A;box-shadow:4px 4px 0 #211D1A}
+button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #211D1A}
+#status{margin-top:20px;font-size:13px;color:#857E74}
+</style></head><body>
+<h1>PWA 安裝測試 📲</h1>
+<p>呢頁做單一樣嘢：試吓將自己加到手機主畫面</p>
+<button id="installBtn">＋ 加到主畫面</button>
+<div id="status"></div>
+<script>
+let deferred=null;
+const btn=document.getElementById('installBtn');
+const st=document.getElementById('status');
+function say(t){st.textContent=t}
+// 1) 已經安裝咗？
+if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone){
+  btn.textContent='✓ 已安裝';btn.style.background='#2EBD85';say('你已經喺主畫面開緊');
+}
+// 2) Android／Chrome 會派呢個 event
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferred=e;say('準備好，撳掣安裝');
+});
+btn.onclick=async()=>{
+  if(deferred){deferred.prompt();const r=await deferred.userChoice;
+    say(r.outcome==='accepted'?'成功安裝 🎉':'你取消咗');deferred=null;return;}
+  // iOS Safari／未就绪：教佢手動做
+  alert('iPhone：點 Safari 底部分享鈕 → 拉到下 →「加到主畫面」\nAndroid：瀏覽器右上 ⋮ →「安裝應用程式」');
+};
+window.addEventListener('appinstalled',()=>{btn.textContent='✓ 已安裝';btn.style.background='#2EBD85';say('搞掂 🎉');});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
